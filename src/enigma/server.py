@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import math
 from typing import Any
 
 from flask import Flask, jsonify, request, send_from_directory
@@ -71,6 +72,13 @@ def create_app(use_mock: bool = False) -> Flask:
 
     @app.post("/api/device/disconnect")
     def device_disconnect():
+        # Stop any active route first so it doesn't keep firing
+        # set_location against a torn-down transport.
+        if simulator.is_running():
+            try:
+                asyncio.run_coroutine_threadsafe(simulator.stop(), device.loop).result()
+            except Exception:  # noqa: BLE001
+                logger.exception("simulator stop failed during disconnect")
         try:
             device.disconnect()
         except Exception as exc:  # noqa: BLE001
@@ -192,8 +200,8 @@ def create_app(use_mock: bool = False) -> Flask:
         else:
             return _err("Provide one of 'preset', 'speedMps', or 'speedKmh'.")
 
-        if speed_mps <= 0:
-            return _err("Speed must be positive.")
+        if not math.isfinite(speed_mps) or speed_mps <= 0:
+            return _err("Speed must be a positive, finite number.")
 
         loop_route = bool(payload.get("loop", False))
 

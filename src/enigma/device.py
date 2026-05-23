@@ -220,6 +220,13 @@ class DeviceController:
         if udid:
             rsd = next((r for r in rsds if r.udid == udid), None)
             if rsd is None:
+                # Close every discovered RSD before bailing out so we don't
+                # leak transports on repeated failed connect attempts.
+                for stale in rsds:
+                    try:
+                        await stale.close()
+                    except Exception:  # noqa: BLE001
+                        pass
                 raise DeviceError(f"Device {udid!r} not present in tunneld.")
         else:
             rsd = rsds[0]

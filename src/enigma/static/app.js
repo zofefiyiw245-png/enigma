@@ -168,7 +168,9 @@
         const btn = document.createElement("button");
         btn.className = "remove-wp";
         btn.textContent = "✕";
-        btn.title = "Remove waypoint";
+        btn.title = `Remove waypoint ${idx + 1}`;
+        btn.setAttribute("aria-label", `Remove waypoint ${idx + 1}`);
+        btn.type = "button";
         btn.addEventListener("click", () => removeWaypoint(idx));
         li.appendChild(btn);
         waypointsList.appendChild(li);

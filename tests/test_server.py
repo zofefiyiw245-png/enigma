@@ -123,3 +123,47 @@ def test_route_presets(client):
     presets = r.get_json()["presets"]
     keys = {p["key"] for p in presets}
     assert {"walking", "driving_city"}.issubset(keys)
+
+
+def test_disconnect_stops_active_route(client):
+    """Disconnecting must halt any running simulator so it stops calling the
+    torn-down device service."""
+    client.post("/api/device/connect", json={})
+
+    # Start a slow route so it's guaranteed still running when we disconnect.
+    r = client.post(
+        "/api/route/start",
+        json={
+            "waypoints": [[0.0, 0.0], [1.0, 0.0]],  # ~111 km
+            "speedKmh": 1,  # ~30+ hours to finish — definitely still running
+        },
+    )
+    assert r.status_code == 200
+    assert r.get_json()["running"] is True
+
+    # Disconnect should also stop the simulator.
+    r = client.post("/api/device/disconnect", json={})
+    assert r.status_code == 200
+
+    status = client.get("/api/route/status").get_json()
+    assert status["running"] is False
+
+
+def test_route_rejects_nan_and_infinity_speeds(client):
+    client.post("/api/device/connect", json={})
+
+    for bad in (float("nan"), float("inf"), float("-inf")):
+        r = client.post(
+            "/api/route/start",
+            json={"waypoints": [[0.0, 0.0], [0.0, 0.001]], "speedMps": bad},
+        )
+        # Flask returns JSON for these. Make sure validation catches it.
+        assert r.status_code == 400, f"expected rejection for speedMps={bad!r}"
+
+    # Same via speedKmh
+    for bad in (float("nan"), float("inf")):
+        r = client.post(
+            "/api/route/start",
+            json={"waypoints": [[0.0, 0.0], [0.0, 0.001]], "speedKmh": bad},
+        )
+        assert r.status_code == 400, f"expected rejection for speedKmh={bad!r}"
