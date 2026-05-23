@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Enigma — iPhone Location</title>
+    <link
+      rel="icon"
+      type="image/svg+xml"
+      href="data:image/svg+xml;utf8,&lt;svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'&gt;&lt;circle cx='16' cy='16' r='14' fill='%234f8cff'/&gt;&lt;circle cx='16' cy='13' r='5' fill='%230f1115'/&gt;&lt;path d='M16 18 L9 30 L23 30 Z' fill='%230f1115'/&gt;&lt;/svg&gt;"
+    />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+      crossorigin=""
+    />
+    <link rel="stylesheet" href="/static/style.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <h1>Enigma</h1>
+      <span class="subtitle">iPhone location spoofer</span>
+      <div class="device-status" id="device-status">
+        <span class="dot dot-off" id="status-dot"></span>
+        <span id="status-text">Disconnected</span>
+      </div>
+      <div class="device-actions">
+        <button id="btn-connect" class="btn primary">Connect iPhone</button>
+        <button id="btn-disconnect" class="btn ghost" disabled>Disconnect</button>
+      </div>
+    </header>
+
+    <main class="layout">
+      <aside class="sidebar">
+        <section class="panel">
+          <h2>Search address</h2>
+          <form id="search-form" autocomplete="off">
+            <input
+              type="text"
+              id="search-input"
+              placeholder="e.g. Eiffel Tower, Paris"
+              required
+            />
+            <button type="submit" class="btn">Search</button>
+          </form>
+          <ul id="search-results" class="results"></ul>
+        </section>
+
+        <section class="panel">
+          <h2>Coordinates</h2>
+          <div class="coord-grid">
+            <label>
+              Latitude
+              <input
+                type="number"
+                step="any"
+                id="coord-lat"
+                placeholder="40.690008"
+              />
+            </label>
+            <label>
+              Longitude
+              <input
+                type="number"
+                step="any"
+                id="coord-lon"
+                placeholder="-74.045843"
+              />
+            </label>
+          </div>
+          <div class="row">
+            <button id="btn-set" class="btn primary" disabled>Set location</button>
+            <button id="btn-reset" class="btn warn" disabled>Reset</button>
+          </div>
+          <p class="hint">Tip: click the map to drop a pin, or shift-click to add a route waypoint.</p>
+        </section>
+
+        <section class="panel">
+          <h2>Route</h2>
+          <ol id="waypoints" class="waypoints empty">
+            <li class="placeholder">Shift-click the map to add waypoints.</li>
+          </ol>
+          <div class="row">
+            <label class="grow">
+              Speed
+              <select id="speed-preset">
+                <option value="walking">Walking (5 km/h)</option>
+                <option value="running">Running (10.8 km/h)</option>
+                <option value="cycling">Cycling (20 km/h)</option>
+                <option value="driving_city" selected>Driving — city (50 km/h)</option>
+                <option value="driving_hwy">Driving — highway (100 km/h)</option>
+                <option value="custom">Custom…</option>
+              </select>
+            </label>
+            <label id="custom-speed-wrap" hidden>
+              km/h
+              <input type="number" min="0.1" step="0.1" value="40" id="custom-speed" />
+            </label>
+          </div>
+          <label class="checkbox">
+            <input type="checkbox" id="loop-route" />
+            Loop route when finished
+          </label>
+          <div class="row">
+            <button id="btn-route-start" class="btn primary" disabled>Start route</button>
+            <button id="btn-route-stop" class="btn warn" disabled>Stop</button>
+            <button id="btn-route-clear" class="btn ghost">Clear waypoints</button>
+          </div>
+          <div id="route-status" class="route-status" hidden></div>
+        </section>
+      </aside>
+
+      <div id="map" class="map"></div>
+    </main>
+
+    <div id="toast-container" class="toast-container" aria-live="polite"></div>
+
+    <script
+      src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+      crossorigin=""
+    ></script>
+    <script src="/static/app.js"></script>
+  </body>
+</html>
