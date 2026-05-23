@@ -55,6 +55,12 @@ def test_connect_set_reset_disconnect_cycle(client):
     assert client.get("/api/device/status").get_json()["connected"] is False
 
 
+def test_connect_rejects_non_object_json(client):
+    r = client.post("/api/device/connect", json=[])
+    assert r.status_code == 400
+    assert "json object" in r.get_json()["error"].lower()
+
+
 def test_set_location_validation(client):
     client.post("/api/device/connect", json={})
     r = client.post("/api/location/set", json={"lat": 1000, "lon": 0})
@@ -97,6 +103,11 @@ def test_route_start_and_stop_with_mock_device(client):
 
 def test_route_start_validation(client):
     client.post("/api/device/connect", json={})
+
+    # Body must be a JSON object, not an array/scalar.
+    r = client.post("/api/route/start", json=[])
+    assert r.status_code == 400
+    assert "json object" in r.get_json()["error"].lower()
 
     # Too few waypoints
     r = client.post("/api/route/start", json={"waypoints": [[0.0, 0.0]], "preset": "walking"})

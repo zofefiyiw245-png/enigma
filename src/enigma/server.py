@@ -60,7 +60,11 @@ def create_app(use_mock: bool = False) -> Flask:
 
     @app.post("/api/device/connect")
     def device_connect():
-        payload = request.get_json(silent=True) or {}
+        payload = request.get_json(silent=True)
+        if payload is None:
+            payload = {}
+        elif not isinstance(payload, dict):
+            return _err("Request body must be a JSON object.")
         udid = payload.get("udid") or None
         try:
             return jsonify(device.connect(udid=udid))
@@ -165,7 +169,11 @@ def create_app(use_mock: bool = False) -> Flask:
 
     @app.post("/api/route/start")
     def route_start():
-        payload: dict[str, Any] = request.get_json(silent=True) or {}
+        payload = request.get_json(silent=True)
+        if payload is None:
+            payload = {}
+        elif not isinstance(payload, dict):
+            return _err("Request body must be a JSON object.")
         raw_waypoints = payload.get("waypoints")
         if not isinstance(raw_waypoints, list) or len(raw_waypoints) < 2:
             return _err("Provide at least two waypoints as [[lat, lon], ...].")
